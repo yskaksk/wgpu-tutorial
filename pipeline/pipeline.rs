@@ -24,22 +24,26 @@ impl State {
 
         let instance = wgpu::Instance::new(wgpu::Backends::all());
         let surface = unsafe { instance.create_surface(window) };
-        let adapter = instance.request_adapter(
-            &wgpu::RequestAdapterOptions {
+        let adapter = instance
+            .request_adapter(&wgpu::RequestAdapterOptions {
                 power_preference: wgpu::PowerPreference::default(),
                 compatible_surface: Some(&surface),
                 force_fallback_adapter: false,
-            },
-        ).await.unwrap();
+            })
+            .await
+            .unwrap();
 
-        let (device, queue) = adapter.request_device(
-            &wgpu::DeviceDescriptor {
-                features: wgpu::Features::empty(),
-                limits: wgpu::Limits::default(),
-                label: None,
-            },
-            None,
-        ).await.unwrap();
+        let (device, queue) = adapter
+            .request_device(
+                &wgpu::DeviceDescriptor {
+                    features: wgpu::Features::empty(),
+                    limits: wgpu::Limits::default(),
+                    label: None,
+                },
+                None,
+            )
+            .await
+            .unwrap();
 
         let config = wgpu::SurfaceConfiguration {
             usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
@@ -55,13 +59,13 @@ impl State {
         let render_pipeline = State::create_render_pipline(
             wgpu::ShaderSource::Wgsl(include_str!("shader.wgsl").into()),
             &device,
-            &config
+            &config,
         );
 
         let challenge_render_pipeline = State::create_render_pipline(
             wgpu::ShaderSource::Wgsl(include_str!("shader2.wgsl").into()),
             &device,
-            &config
+            &config,
         );
 
         Self {
@@ -73,24 +77,25 @@ impl State {
             clear_color,
             render_pipeline,
             challenge_render_pipeline,
-            challenge: false
+            challenge: false,
         }
     }
 
     fn create_render_pipline(
         source: wgpu::ShaderSource,
         device: &wgpu::Device,
-        config: &wgpu::SurfaceConfiguration
+        config: &wgpu::SurfaceConfiguration,
     ) -> wgpu::RenderPipeline {
         let shader = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
             label: Some("Shader"),
-            source
+            source,
         });
-        let render_pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: Some("Render Pipeline Layout"),
-            bind_group_layouts: &[],
-            push_constant_ranges: &[],
-        });
+        let render_pipeline_layout =
+            device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+                label: Some("Render Pipeline Layout"),
+                bind_group_layouts: &[],
+                push_constant_ranges: &[],
+            });
         return device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("Render Pipeline"),
             layout: Some(&render_pipeline_layout),
@@ -121,9 +126,9 @@ impl State {
             multisample: wgpu::MultisampleState {
                 count: 1,
                 mask: !0,
-                alpha_to_coverage_enabled: false
-            }
-        })
+                alpha_to_coverage_enabled: false,
+            },
+        });
     }
 
     pub fn resize(&mut self, new_size: winit::dpi::PhysicalSize<u32>) {
@@ -143,7 +148,7 @@ impl State {
                     r: position.x as f64 / self.size.width as f64,
                     g: position.y as f64 / self.size.height as f64,
                     b: 1.0,
-                    a: 1.0
+                    a: 1.0,
                 };
                 true
             }
@@ -159,18 +164,22 @@ impl State {
                 self.challenge = *state == ElementState::Released;
                 true
             }
-            _ => false
+            _ => false,
         }
     }
 
-    fn update(&mut self) { }
+    fn update(&mut self) {}
 
     fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
         let output = self.surface.get_current_texture()?;
-        let view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-            label: Some("Render Encoder"),
-        });
+        let view = output
+            .texture
+            .create_view(&wgpu::TextureViewDescriptor::default());
+        let mut encoder = self
+            .device
+            .create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                label: Some("Render Encoder"),
+            });
 
         {
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
@@ -184,7 +193,7 @@ impl State {
                             load: wgpu::LoadOp::Clear(self.clear_color),
                             store: true,
                         },
-                    }
+                    },
                 ],
                 depth_stencil_attachment: None,
             });
@@ -213,48 +222,45 @@ fn main() {
 
     let mut state: State = pollster::block_on(State::new(&window));
 
-    event_loop.run(move |event, _, control_flow| {
-        match event {
-            Event::WindowEvent {
-                ref event,
-                window_id,
-            } if window_id == window.id() => {
-                if !state.input(event) {
-                    match event {
-                        WindowEvent::CloseRequested
-                        | WindowEvent::KeyboardInput {
-                            input:
-                                KeyboardInput {
-                                    state: ElementState::Pressed,
-                                    virtual_keycode: Some(VirtualKeyCode::Escape),
-                                    ..
-                                },
-                            ..
-                        } => *control_flow = ControlFlow::Exit,
-                        WindowEvent::Resized(physical_size) => {
-                            state.resize(*physical_size);
-                        }
-                        WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                            state.resize(**new_inner_size);
-                        }
-                        _ => {}
+    event_loop.run(move |event, _, control_flow| match event {
+        Event::WindowEvent {
+            ref event,
+            window_id,
+        } if window_id == window.id() => {
+            if !state.input(event) {
+                match event {
+                    WindowEvent::CloseRequested
+                    | WindowEvent::KeyboardInput {
+                        input:
+                            KeyboardInput {
+                                state: ElementState::Pressed,
+                                virtual_keycode: Some(VirtualKeyCode::Escape),
+                                ..
+                            },
+                        ..
+                    } => *control_flow = ControlFlow::Exit,
+                    WindowEvent::Resized(physical_size) => {
+                        state.resize(*physical_size);
                     }
+                    WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
+                        state.resize(**new_inner_size);
+                    }
+                    _ => {}
                 }
             }
-            Event::RedrawRequested(_) => {
-                state.update();
-                match state.render() {
-                    Ok(_) => {}
-                    Err(wgpu::SurfaceError::Lost) => state.resize(state.size),
-                    Err(wgpu::SurfaceError::OutOfMemory) => *control_flow = ControlFlow::Exit,
-                    Err(e) => eprintln!("{:?}", e),
-                }
-            }
-            Event::RedrawEventsCleared => {
-                window.request_redraw();
-            }
-            _ => {}
         }
+        Event::RedrawRequested(_) => {
+            state.update();
+            match state.render() {
+                Ok(_) => {}
+                Err(wgpu::SurfaceError::Lost) => state.resize(state.size),
+                Err(wgpu::SurfaceError::OutOfMemory) => *control_flow = ControlFlow::Exit,
+                Err(e) => eprintln!("{:?}", e),
+            }
+        }
+        Event::RedrawEventsCleared => {
+            window.request_redraw();
+        }
+        _ => {}
     });
 }
-

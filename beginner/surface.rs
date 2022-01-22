@@ -21,22 +21,26 @@ impl State {
 
         let instance = wgpu::Instance::new(wgpu::Backends::all());
         let surface = unsafe { instance.create_surface(window) };
-        let adapter = instance.request_adapter(
-            &wgpu::RequestAdapterOptions {
+        let adapter = instance
+            .request_adapter(&wgpu::RequestAdapterOptions {
                 power_preference: wgpu::PowerPreference::default(),
                 compatible_surface: Some(&surface),
                 force_fallback_adapter: false,
-            },
-        ).await.unwrap();
+            })
+            .await
+            .unwrap();
 
-        let (device, queue) = adapter.request_device(
-            &wgpu::DeviceDescriptor {
-                features: wgpu::Features::empty(),
-                limits: wgpu::Limits::default(),
-                label: None,
-            },
-            None,
-        ).await.unwrap();
+        let (device, queue) = adapter
+            .request_device(
+                &wgpu::DeviceDescriptor {
+                    features: wgpu::Features::empty(),
+                    limits: wgpu::Limits::default(),
+                    label: None,
+                },
+                None,
+            )
+            .await
+            .unwrap();
 
         let config = wgpu::SurfaceConfiguration {
             usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
@@ -76,22 +80,26 @@ impl State {
                     r: position.x as f64 / self.size.width as f64,
                     g: position.y as f64 / self.size.height as f64,
                     b: 1.0,
-                    a: 1.0
+                    a: 1.0,
                 };
                 true
             }
-            _ => false
+            _ => false,
         }
     }
 
-    fn update(&mut self) { }
+    fn update(&mut self) {}
 
     fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
         let output = self.surface.get_current_texture()?;
-        let view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor {
-            label: Some("Render Encoder"),
-        });
+        let view = output
+            .texture
+            .create_view(&wgpu::TextureViewDescriptor::default());
+        let mut encoder = self
+            .device
+            .create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                label: Some("Render Encoder"),
+            });
 
         {
             let _render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
@@ -122,47 +130,45 @@ fn main() {
 
     let mut state: State = pollster::block_on(State::new(&window));
 
-    event_loop.run(move |event, _, control_flow| {
-        match event {
-            Event::WindowEvent {
-                ref event,
-                window_id,
-            } if window_id == window.id() => {
-                if !state.input(event) {
-                    match event {
-                        WindowEvent::CloseRequested
-                        | WindowEvent::KeyboardInput {
-                            input:
-                                KeyboardInput {
-                                    state: ElementState::Pressed,
-                                    virtual_keycode: Some(VirtualKeyCode::Escape),
-                                    ..
-                                },
-                            ..
-                        } => *control_flow = ControlFlow::Exit,
-                        WindowEvent::Resized(physical_size) => {
-                            state.resize(*physical_size);
-                        }
-                        WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                            state.resize(**new_inner_size);
-                        }
-                        _ => {}
+    event_loop.run(move |event, _, control_flow| match event {
+        Event::WindowEvent {
+            ref event,
+            window_id,
+        } if window_id == window.id() => {
+            if !state.input(event) {
+                match event {
+                    WindowEvent::CloseRequested
+                    | WindowEvent::KeyboardInput {
+                        input:
+                            KeyboardInput {
+                                state: ElementState::Pressed,
+                                virtual_keycode: Some(VirtualKeyCode::Escape),
+                                ..
+                            },
+                        ..
+                    } => *control_flow = ControlFlow::Exit,
+                    WindowEvent::Resized(physical_size) => {
+                        state.resize(*physical_size);
                     }
+                    WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
+                        state.resize(**new_inner_size);
+                    }
+                    _ => {}
                 }
             }
-            Event::RedrawRequested(_) => {
-                state.update();
-                match state.render() {
-                    Ok(_) => {}
-                    Err(wgpu::SurfaceError::Lost) => state.resize(state.size),
-                    Err(wgpu::SurfaceError::OutOfMemory) => *control_flow = ControlFlow::Exit,
-                    Err(e) => eprintln!("{:?}", e),
-                }
-            }
-            Event::RedrawEventsCleared => {
-                window.request_redraw();
-            }
-            _ => {}
         }
+        Event::RedrawRequested(_) => {
+            state.update();
+            match state.render() {
+                Ok(_) => {}
+                Err(wgpu::SurfaceError::Lost) => state.resize(state.size),
+                Err(wgpu::SurfaceError::OutOfMemory) => *control_flow = ControlFlow::Exit,
+                Err(e) => eprintln!("{:?}", e),
+            }
+        }
+        Event::RedrawEventsCleared => {
+            window.request_redraw();
+        }
+        _ => {}
     });
 }

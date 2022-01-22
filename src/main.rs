@@ -15,15 +15,15 @@ fn main() {
             window_id,
         } if window_id == window.id() => match event {
             WindowEvent::CloseRequested
-                | WindowEvent::KeyboardInput {
-                    input:
-                        KeyboardInput {
-                            state: ElementState::Pressed,
-                            virtual_keycode: Some(VirtualKeyCode::Escape),
-                            ..
-                        },
-                    ..
-                } => *control_flow = ControlFlow::Exit,
+            | WindowEvent::KeyboardInput {
+                input:
+                    KeyboardInput {
+                        state: ElementState::Pressed,
+                        virtual_keycode: Some(VirtualKeyCode::Escape),
+                        ..
+                    },
+                ..
+            } => *control_flow = ControlFlow::Exit,
             _ => {}
         },
         _ => {}

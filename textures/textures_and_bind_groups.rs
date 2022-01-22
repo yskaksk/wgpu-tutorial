@@ -43,11 +43,26 @@ impl Vertex {
 }
 
 const VERTICES: &[Vertex] = &[
-    Vertex { position: [-0.086, 0.492, 0.0],  tex_coords: [0.413, 0.992], },
-    Vertex { position: [-0.495, 0.069, 0.0],  tex_coords: [0.004, 0.569], },
-    Vertex { position: [-0.219, -0.449, 0.0], tex_coords: [0.280, 0.050], },
-    Vertex { position: [0.359, -0.347, 0.0],  tex_coords: [0.859, 0.152], },
-    Vertex { position: [0.441, 0.234, 0.0],   tex_coords: [0.941, 0.734], },
+    Vertex {
+        position: [-0.086, 0.492, 0.0],
+        tex_coords: [0.413, 0.992],
+    },
+    Vertex {
+        position: [-0.495, 0.069, 0.0],
+        tex_coords: [0.004, 0.569],
+    },
+    Vertex {
+        position: [-0.219, -0.449, 0.0],
+        tex_coords: [0.280, 0.050],
+    },
+    Vertex {
+        position: [0.359, -0.347, 0.0],
+        tex_coords: [0.859, 0.152],
+    },
+    Vertex {
+        position: [0.441, 0.234, 0.0],
+        tex_coords: [0.941, 0.734],
+    },
 ];
 
 // 反時計回り
@@ -79,20 +94,25 @@ impl State {
 
         let instance = wgpu::Instance::new(wgpu::Backends::all());
         let surface = unsafe { instance.create_surface(window) };
-        let adapter = instance.request_adapter(
-            &wgpu::RequestAdapterOptions {
+        let adapter = instance
+            .request_adapter(&wgpu::RequestAdapterOptions {
                 power_preference: wgpu::PowerPreference::default(),
                 compatible_surface: Some(&surface),
                 force_fallback_adapter: false,
-            }).await.unwrap();
-        let (device, queue) = adapter.request_device(
-            &wgpu::DeviceDescriptor {
-                features: wgpu::Features::empty(),
-                limits: wgpu::Limits::default(),
-                label: None,
-            },
-            None,
-        ).await.unwrap();
+            })
+            .await
+            .unwrap();
+        let (device, queue) = adapter
+            .request_device(
+                &wgpu::DeviceDescriptor {
+                    features: wgpu::Features::empty(),
+                    limits: wgpu::Limits::default(),
+                    label: None,
+                },
+                None,
+            )
+            .await
+            .unwrap();
 
         let config = wgpu::SurfaceConfiguration {
             usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
@@ -105,42 +125,44 @@ impl State {
 
         // texture
         let diffuse_bytes = include_bytes!("./happy-tree.png");
-        let diffuse_texture = texture::Texture::from_bytes(&device, &queue, diffuse_bytes, "happy-tree").unwrap();
+        let diffuse_texture =
+            texture::Texture::from_bytes(&device, &queue, diffuse_bytes, "happy-tree").unwrap();
         let texture_bind_group_layout = State::create_texture_bind_group_layout(&device);
-        let diffuse_bind_group = State::create_bind_group(&device, &diffuse_texture, &texture_bind_group_layout);
+        let diffuse_bind_group =
+            State::create_bind_group(&device, &diffuse_texture, &texture_bind_group_layout);
 
         let diffuse_bytes2 = include_bytes!("./cat_png.png");
-        let diffuse_texutre2 = texture::Texture::from_bytes(&device, &queue, diffuse_bytes2, "cat").unwrap();
+        let diffuse_texutre2 =
+            texture::Texture::from_bytes(&device, &queue, diffuse_bytes2, "cat").unwrap();
         let texture_bind_group_layout2 = State::create_texture_bind_group_layout(&device);
-        let diffuse_bind_group2 = State::create_bind_group(&device, &diffuse_texutre2, &texture_bind_group_layout2);
+        let diffuse_bind_group2 =
+            State::create_bind_group(&device, &diffuse_texutre2, &texture_bind_group_layout2);
 
         // shaderとpipeline
         let shader = device.create_shader_module(&wgpu::ShaderModuleDescriptor {
             label: Some("Shader"),
             source: wgpu::ShaderSource::Wgsl(include_str!("shader.wgsl").into()),
         });
-        let render_pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
-            label: Some("Render Pipeline Layout"),
-            bind_group_layouts: &[&texture_bind_group_layout],
-            push_constant_ranges: &[],
-        });
-        let render_pipeline = State::create_render_pipeline(&device, &render_pipeline_layout, &shader, &config);
+        let render_pipeline_layout =
+            device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+                label: Some("Render Pipeline Layout"),
+                bind_group_layouts: &[&texture_bind_group_layout],
+                push_constant_ranges: &[],
+            });
+        let render_pipeline =
+            State::create_render_pipeline(&device, &render_pipeline_layout, &shader, &config);
 
         // buffer
-        let vertex_buffer = device.create_buffer_init(
-            &wgpu::util::BufferInitDescriptor {
-                label: Some("Vertex Buffer"),
-                contents: bytemuck::cast_slice(VERTICES),
-                usage: wgpu::BufferUsages::VERTEX,
-            }
-        );
-        let index_buffer = device.create_buffer_init(
-            &wgpu::util::BufferInitDescriptor {
-                label: Some("Index Buffer"),
-                contents: bytemuck::cast_slice(INDICES),
-                usage: wgpu::BufferUsages::INDEX,
-            }
-        );
+        let vertex_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Vertex Buffer"),
+            contents: bytemuck::cast_slice(VERTICES),
+            usage: wgpu::BufferUsages::VERTEX,
+        });
+        let index_buffer = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Index Buffer"),
+            contents: bytemuck::cast_slice(INDICES),
+            usage: wgpu::BufferUsages::INDEX,
+        });
         let num_indices = INDICES.len() as u32;
 
         Self {
@@ -156,7 +178,7 @@ impl State {
             diffuse_texture,
             diffuse_bind_group,
             diffuse_bind_group2,
-            challenge: false
+            challenge: false,
         }
     }
 
@@ -184,37 +206,40 @@ impl State {
                 self.challenge = *state == ElementState::Released;
                 true
             }
-            _ => false
+            _ => false,
         }
     }
 
-    fn update(&mut self) { }
+    fn update(&mut self) {}
 
     fn render(&mut self) -> Result<(), wgpu::SurfaceError> {
         let output = self.surface.get_current_texture()?;
-        let view = output.texture.create_view(&wgpu::TextureViewDescriptor::default());
-        let mut encoder = self.device.create_command_encoder(&wgpu::CommandEncoderDescriptor { // wgpu::CommandEncoder
-            label: Some("Render Encoder"),
-        });
+        let view = output
+            .texture
+            .create_view(&wgpu::TextureViewDescriptor::default());
+        let mut encoder = self
+            .device
+            .create_command_encoder(&wgpu::CommandEncoderDescriptor {
+                // wgpu::CommandEncoder
+                label: Some("Render Encoder"),
+            });
 
         {
             let mut render_pass = encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("Render Pass"),
-                color_attachments: &[
-                    wgpu::RenderPassColorAttachment {
-                        view: &view,
-                        resolve_target: None,
-                        ops: wgpu::Operations {
-                            load: wgpu::LoadOp::Clear(wgpu::Color {
-                                r: 0.1,
-                                g: 0.2,
-                                b: 0.3,
-                                a: 1.0,
-                            }),
-                            store: true,
-                        },
-                    }
-                ],
+                color_attachments: &[wgpu::RenderPassColorAttachment {
+                    view: &view,
+                    resolve_target: None,
+                    ops: wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(wgpu::Color {
+                            r: 0.1,
+                            g: 0.2,
+                            b: 0.3,
+                            a: 1.0,
+                        }),
+                        store: true,
+                    },
+                }],
                 depth_stencil_attachment: None,
             });
 
@@ -237,61 +262,55 @@ impl State {
     }
 
     fn create_texture_bind_group_layout(device: &wgpu::Device) -> wgpu::BindGroupLayout {
-        device.create_bind_group_layout(
-            &wgpu::BindGroupLayoutDescriptor {
-                entries: &[
-                    wgpu::BindGroupLayoutEntry {
-                        binding: 0,
-                        visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Texture {
-                            multisampled: false,
-                            view_dimension: wgpu::TextureViewDimension::D2,
-                            sample_type: wgpu::TextureSampleType::Float { filterable: true },
-                        },
-                        count: None,
+        device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            entries: &[
+                wgpu::BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Texture {
+                        multisampled: false,
+                        view_dimension: wgpu::TextureViewDimension::D2,
+                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
                     },
-                    wgpu::BindGroupLayoutEntry {
-                        binding: 1,
-                        visibility: wgpu::ShaderStages::FRAGMENT,
-                        ty: wgpu::BindingType::Sampler(
-                            wgpu::SamplerBindingType::Filtering,
-                        ),
-                        count: None,
-                    },
-                ],
-                label: Some("texture_bind_group_layout"),
-            }
-        )
+                    count: None,
+                },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 1,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
+                    count: None,
+                },
+            ],
+            label: Some("texture_bind_group_layout"),
+        })
     }
 
     fn create_bind_group(
         device: &wgpu::Device,
         diffuse_texture: &texture::Texture,
-        texture_bind_group_layout: &wgpu::BindGroupLayout
+        texture_bind_group_layout: &wgpu::BindGroupLayout,
     ) -> wgpu::BindGroup {
-        device.create_bind_group(
-            &wgpu::BindGroupDescriptor {
-                layout: &texture_bind_group_layout,
-                entries: &[
-                    wgpu::BindGroupEntry {
-                        binding: 0,
-                        resource: wgpu::BindingResource::TextureView(&diffuse_texture.view),
-                    },
-                    wgpu::BindGroupEntry {
-                        binding: 1,
-                        resource: wgpu::BindingResource::Sampler(&diffuse_texture.sampler),
-                    }
-                ],
-                label: Some("diffuse_bind_group"),
-            }
-        )
+        device.create_bind_group(&wgpu::BindGroupDescriptor {
+            layout: &texture_bind_group_layout,
+            entries: &[
+                wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: wgpu::BindingResource::TextureView(&diffuse_texture.view),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 1,
+                    resource: wgpu::BindingResource::Sampler(&diffuse_texture.sampler),
+                },
+            ],
+            label: Some("diffuse_bind_group"),
+        })
     }
 
     fn create_render_pipeline(
         device: &wgpu::Device,
         render_pipeline_layout: &wgpu::PipelineLayout,
         shader: &wgpu::ShaderModule,
-        config: &wgpu::SurfaceConfiguration
+        config: &wgpu::SurfaceConfiguration,
     ) -> wgpu::RenderPipeline {
         device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
             label: Some("Render Pipeline"),
@@ -340,47 +359,45 @@ fn main() {
 
     let mut state: State = pollster::block_on(State::new(&window));
 
-    event_loop.run(move |event, _, control_flow| {
-        match event {
-            Event::WindowEvent {
-                ref event,
-                window_id,
-            } if window_id == window.id() => {
-                if !state.input(event) {
-                    match event {
-                        WindowEvent::CloseRequested
-                        | WindowEvent::KeyboardInput {
-                            input:
-                                KeyboardInput {
-                                    state: ElementState::Pressed,
-                                    virtual_keycode: Some(VirtualKeyCode::Escape),
-                                    ..
-                                },
-                            ..
-                        } => *control_flow = ControlFlow::Exit,
-                        WindowEvent::Resized(physical_size) => {
-                            state.resize(*physical_size);
-                        }
-                        WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
-                            state.resize(**new_inner_size);
-                        }
-                        _ => {}
+    event_loop.run(move |event, _, control_flow| match event {
+        Event::WindowEvent {
+            ref event,
+            window_id,
+        } if window_id == window.id() => {
+            if !state.input(event) {
+                match event {
+                    WindowEvent::CloseRequested
+                    | WindowEvent::KeyboardInput {
+                        input:
+                            KeyboardInput {
+                                state: ElementState::Pressed,
+                                virtual_keycode: Some(VirtualKeyCode::Escape),
+                                ..
+                            },
+                        ..
+                    } => *control_flow = ControlFlow::Exit,
+                    WindowEvent::Resized(physical_size) => {
+                        state.resize(*physical_size);
                     }
+                    WindowEvent::ScaleFactorChanged { new_inner_size, .. } => {
+                        state.resize(**new_inner_size);
+                    }
+                    _ => {}
                 }
             }
-            Event::RedrawRequested(_) => {
-                state.update();
-                match state.render() {
-                    Ok(_) => {}
-                    Err(wgpu::SurfaceError::Lost) => state.resize(state.size),
-                    Err(wgpu::SurfaceError::OutOfMemory) => *control_flow = ControlFlow::Exit,
-                    Err(e) => eprintln!("{:?}", e),
-                }
-            }
-            Event::RedrawEventsCleared => {
-                window.request_redraw();
-            }
-            _ => {}
         }
+        Event::RedrawRequested(_) => {
+            state.update();
+            match state.render() {
+                Ok(_) => {}
+                Err(wgpu::SurfaceError::Lost) => state.resize(state.size),
+                Err(wgpu::SurfaceError::OutOfMemory) => *control_flow = ControlFlow::Exit,
+                Err(e) => eprintln!("{:?}", e),
+            }
+        }
+        Event::RedrawEventsCleared => {
+            window.request_redraw();
+        }
+        _ => {}
     });
 }
