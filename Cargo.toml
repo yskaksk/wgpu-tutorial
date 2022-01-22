@@ -6,14 +6,15 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-image = "0.23"
-winit = "0.25"
+anyhow = "1.0"
+bytemuck = { version = "1.4", features = [ "derive" ] }
 cgmath = "0.18"
 env_logger = "0.9"
 log = "0.4"
-wgpu = "0.11"
 pollster = "0.2"
-bytemuck = { version = "1.4", features = [ "derive" ] }
+image = "0.23"
+wgpu = "0.12"
+winit = "0.26"
 
 [[example]]
 name = "Surface"
@@ -26,3 +27,7 @@ path = "pipeline/pipeline.rs"
 [[example]]
 name = "Buffers"
 path = "buffers/buffers.rs"
+
+[[example]]
+name = "Textures"
+path = "textures/textures_and_bind_groups.rs"
