@@ -31,3 +31,7 @@ path = "buffers/buffers.rs"
 [[example]]
 name = "Textures"
 path = "textures/textures_and_bind_groups.rs"
+
+[[example]]
+name = "Camera"
+path = "camera/uniform_buffers_and_a_3d_camera.rs"
